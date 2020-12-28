@@ -1,17 +1,57 @@
+import java.awt.*;
+import java.sql.*;
 import java.util.*;
 
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.*;
+
+import javax.swing.*;
 import java.io.*;
 
 public class Analysis {
 
-    public static void main(String[] args){
-        String fn = "C:\\Users\\PC7\\Desktop\\Personal_Work\\Hizmetler\\May_Tohumculuk\\Corn_Heterotic_Groups\\Maize-001.xlsx";
-        ArrayList<Maize> data = getGenotypes(fn);
+    public static void main(String[] args) throws Exception{
+        UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
 
-        String fn2 = "C:\\Users\\PC7\\Desktop\\Personal_Work\\Hizmetler\\May_Tohumculuk\\Corn_Heterotic_Groups\\Biomarkers.txt";
-        LinkedHashMap<String, ArrayList<String>> biomarkers = getBiomarkers(fn2);
+        Connection c = null;
+
+        Class.forName("org.sqlite.JDBC");
+        c = DriverManager.getConnection("jdbc:sqlite:test.db");
+
+        System.out.println("Connection succesful");
+
+        Statement st = c.createStatement();
+        String com = "CREATE TABLE IF NOT EXISTS `Projects` (" +
+                "`serialized_id` INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "`object_name` varchar(20) default NULL, " +
+                "`serialized_object` blob" +
+                ");";
+
+        //st.executeUpdate("DROP TABLE Projects;");
+        st.executeUpdate(com);
+
+        c.close();
+
+        JFrame jf = new JFrame();
+        MainPanel mp = new MainPanel();
+
+        ImageIcon img = new ImageIcon("src/main/resources/may-logo.png");
+        Image im = img.getImage();
+        Image im2 = im.getScaledInstance(im.getWidth(null)/10, im.getHeight(null)/10, Image.SCALE_SMOOTH);
+        img.setImage(im2);
+        mp.getLogoLabel().setIcon(img);
+
+        jf.add(mp.getMainPanel());
+        jf.setSize(1000,800);
+        jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        jf.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        jf.setVisible(true);
+
+
+        /*inputFile = "C:\\Users\\PC7\\Desktop\\Personal_Work\\Hizmetler\\May_Tohumculuk\\Corn_Heterotic_Groups\\Maize-001.xlsx";
+        ArrayList<Maize> data = getGenotypes(inputFile);
+
+        biomarkerFile = "C:\\Users\\PC7\\Desktop\\Personal_Work\\Hizmetler\\May_Tohumculuk\\Corn_Heterotic_Groups\\Biomarkers.txt";
+        LinkedHashMap<String, ArrayList<String>> biomarkers = getBiomarkers(biomarkerFile);
 
         for(Maize m : data){
             analyze(m,biomarkers);
@@ -27,7 +67,7 @@ public class Analysis {
                 s += " "+ks2.get(i) +": "+ Math.round(10000*m.getResult().get(ks2.get(i)))/100.0+"%";
             }
             System.out.println(m.getName()+": "+s);
-        }
+        }*/
     }
 
     public static LinkedHashMap<String, Double> calculate(LinkedHashMap<String,String> genotypes,LinkedHashMap<String,ArrayList<String>> biomarkers){
@@ -230,58 +270,6 @@ public class Analysis {
         }
 
         return check;
-    }
-
-    public static ArrayList<Maize> getGenotypes(String filename){
-        ArrayList<Maize> samples = new ArrayList<>();
-        try{
-            Workbook wb = WorkbookFactory.create(new File(filename));
-            Sheet sheet = wb.getSheetAt(0);
-
-            Iterator<Row> rowIterator = sheet.iterator();
-
-            if(rowIterator.hasNext()){
-                Row row = rowIterator.next(); // Header Row
-                Iterator<Cell> cellIterator = row.cellIterator();
-
-                int i;
-                for(i=0;(i<3 && cellIterator.hasNext());i++){
-                    Cell cell = cellIterator.next(); // Headers 'Name', 'Chr' and 'Position'
-                }
-
-                if(i<3){
-                    System.out.println("Input file you specified is not appropriate!");
-                }
-
-                while (cellIterator.hasNext()) {
-                    Cell cell = cellIterator.next();
-                    samples.add(new Maize(cell.getStringCellValue()));
-                }
-            }
-
-            while (rowIterator.hasNext()) {
-                Row row = rowIterator.next(); // Probe set Rows
-                Iterator<Cell> cellIterator = row.cellIterator();
-
-                String ps = cellIterator.next().getStringCellValue(); // Probeset Name
-                DataFormatter formatter = new DataFormatter();
-                String chr = formatter.formatCellValue(cellIterator.next()); // Chromosome
-                String pos = formatter.formatCellValue(cellIterator.next()); // Position
-
-                int s = 0;
-                while (cellIterator.hasNext()) {
-                    Cell cell = cellIterator.next();
-                    String cellValue = cell.getStringCellValue();
-                    Maize m = samples.get(s++);
-                    m.getGenotype().put(ps,cellValue);
-                }
-                wb.close();
-            }
-        }catch(Exception ex){
-            ex.printStackTrace();
-        }
-
-        return samples;
     }
 
     public static LinkedHashMap<String, ArrayList<String>> getBiomarkers(String filename){

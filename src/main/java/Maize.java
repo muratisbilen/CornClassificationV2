@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 
-public class Maize {
+public class Maize implements Serializable {
     private String name;
     private LinkedHashMap<String, String> genotype;
     private LinkedHashMap<String, Double> result;
