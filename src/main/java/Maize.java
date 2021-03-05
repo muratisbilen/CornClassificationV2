@@ -47,4 +47,8 @@ public class Maize implements Serializable {
     public void setResult(LinkedHashMap<String, Double> result) {
         this.result = result;
     }
+
+    public String toString(){
+        return(this.name);
+    }
 }

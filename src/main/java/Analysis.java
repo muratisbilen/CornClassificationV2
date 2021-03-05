@@ -2,8 +2,6 @@ import java.awt.*;
 import java.sql.*;
 import java.util.*;
 
-import org.apache.poi.ss.usermodel.*;
-
 import javax.swing.*;
 import java.io.*;
 
@@ -50,7 +48,7 @@ public class Analysis {
         /*inputFile = "C:\\Users\\PC7\\Desktop\\Personal_Work\\Hizmetler\\May_Tohumculuk\\Corn_Heterotic_Groups\\Maize-001.xlsx";
         ArrayList<Maize> data = getGenotypes(inputFile);
 
-        biomarkerFile = "C:\\Users\\PC7\\Desktop\\Personal_Work\\Hizmetler\\May_Tohumculuk\\Corn_Heterotic_Groups\\Biomarkers.txt";
+        biomarkerFile = "Biomarkers.txt";
         LinkedHashMap<String, ArrayList<String>> biomarkers = getBiomarkers(biomarkerFile);
 
         for(Maize m : data){
@@ -275,7 +273,8 @@ public class Analysis {
     public static LinkedHashMap<String, ArrayList<String>> getBiomarkers(String filename){
         LinkedHashMap<String, ArrayList<String>> result = new LinkedHashMap<>();
         try{
-            BufferedReader br = new BufferedReader(new FileReader(filename));
+            InputStream is = MainPanel.class.getClassLoader().getResourceAsStream(filename);
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String s = br.readLine(); //Header
             while((s=br.readLine())!=null){
 

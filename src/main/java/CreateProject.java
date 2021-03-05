@@ -6,9 +6,10 @@ import org.apache.poi.ss.usermodel.*;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.sql.Connection;
@@ -16,6 +17,7 @@ import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class CreateProject {
     private JPanel mainPanel;
@@ -26,10 +28,13 @@ public class CreateProject {
     private JButton cancelBut;
     private JButton createBut;
     private JFrame fr = new JFrame("Proje Oluştur");
+    private JProgressBar pb = new JProgressBar();
+    private JTextPane tp = new JTextPane();
 
     public CreateProject(){
         fr.add(mainPanel);
         fr.setSize(800,600);
+        fr.setLocationRelativeTo(null);
         fr.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         createBut.setEnabled(false);
         projectNameTF.getDocument().addDocumentListener(new DocumentListener() {
@@ -91,44 +96,6 @@ public class CreateProject {
             }
         });
 
-        createBut.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                File f1 = new File(rawDataFileTF.getText());
-                if(!f1.exists()){
-                    createBut.setEnabled(false);
-                    JOptionPane.showMessageDialog(null,"The sample file you specified does not exist. Please specify an existing file with its absolute path.");
-                }else{
-
-                    try {
-                        Class.forName("org.sqlite.JDBC");
-                        Connection c = DriverManager.getConnection("jdbc:sqlite:test.db");
-
-                        ArrayList<Maize> samples = getGenotypes(rawDataFileTF.getText());
-                        String biomarkerFile = "C:\\Users\\PC7\\Desktop\\Personal_Work\\Hizmetler\\May_Tohumculuk\\Corn_Heterotic_Groups\\Biomarkers.txt";
-                        LinkedHashMap<String, ArrayList<String>> biomarkers = Analysis.getBiomarkers(biomarkerFile);
-
-                        for(Maize m : samples){
-                            Analysis.analyze(m,biomarkers);
-                        }
-
-                        Project p = new Project(projectNameTF.getText(),samples);
-
-                        Gson gson = new GsonBuilder().serializeSpecialFloatingPointValues().create();
-                        Type doubleDataListType = new TypeToken<Double>() {}.getType();
-                        String pgson = gson.toJson(p);
-
-                        long serialized_id = SerializeToDatabase.serializeJavaObjectToDB(c,pgson,p);
-
-                        c.close();
-                        fr.dispose();
-                    }catch(Exception ex){
-                        System.out.println("Problem in serialization, saving to database or reading the raw data file.");
-                        ex.printStackTrace();
-                    }
-                }
-            }
-        });
         cancelBut.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -152,7 +119,7 @@ public class CreateProject {
         });
     }
 
-    public ArrayList<Maize> getGenotypes(String filename){
+    public static ArrayList<Maize> getGenotypes(String filename){
         ArrayList<Maize> samples = new ArrayList<>();
         try{
             Workbook wb = WorkbookFactory.create(new File(filename));
@@ -202,6 +169,22 @@ public class CreateProject {
         }
 
         return samples;
+    }
+
+    public JProgressBar getPb() {
+        return pb;
+    }
+
+    public void setPb(JProgressBar pb) {
+        this.pb = pb;
+    }
+
+    public JTextPane getTp() {
+        return tp;
+    }
+
+    public void setTp(JTextPane tp) {
+        this.tp = tp;
     }
 
     public JFrame getFr() {
