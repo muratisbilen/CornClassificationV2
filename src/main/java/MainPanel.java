@@ -15,6 +15,8 @@ import java.io.File;
 import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -200,6 +202,40 @@ public class MainPanel {
                 openProjectJF.dispose();
             }
         });
+
+        op.getOpenProjectBut().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Connection c = null;
+                try {
+                    Class.forName("org.sqlite.JDBC");
+                    c = DriverManager.getConnection("jdbc:sqlite:test.db");
+
+                    Statement st = c.createStatement();
+                    ProjectItem pi = (ProjectItem)(op.getProjectList().getSelectedValue());
+                    String getdbtable = "Select serialized_object from Projects where serialized_id="+pi.getSerialized_id();
+
+                    ResultSet rs = st.executeQuery(getdbtable);
+                    Project p = null;
+                    if(rs.next()) {
+                        String pgson = SerializeToDatabase.deSerializeJavaObjectFromDB(c,pi.getSerialized_id());
+                        Gson gson = new Gson();
+                        Type mytype = new TypeToken<Project>(){}.getType();
+                        p = gson.fromJson(pgson, mytype);
+                    }
+
+                    if(p!=null){
+                        openProject(p);
+                        openProjectJF.dispose();
+                    }else{
+                        JOptionPane.showMessageDialog(centerPanel,"Proje veritabanında bulunamamıştır.");
+                    }
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                }
+            }
+        });
+
         createProjectBut.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -223,6 +259,20 @@ public class MainPanel {
         this.dia.setLocationRelativeTo(null);
         this.dia.setVisible(true);
         this.dia.validate();
+    }
+
+    public void openProject(Project p){
+        ArrayList<Maize> samples = p.getSamples();
+
+        DefaultListModel dlm = new DefaultListModel();
+        for(int i=0;i<samples.size();i++){
+            dlm.addElement(samples.get(i));
+        }
+        rf.getSampleList().setModel(dlm);
+
+        centerPanel1.removeAll();
+        centerPanel1.add(rf.getMainPanel(), BorderLayout.CENTER);
+        centerPanel1.updateUI();
     }
 
     public void disposeProgressBar(){

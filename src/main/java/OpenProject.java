@@ -1,6 +1,8 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -16,13 +18,32 @@ public class OpenProject {
     private JPanel projectInfoPanel;
     private JScrollPane projectInfoSP;
     private JButton cancelButton;
+    private JScrollPane projectListSP;
+    private JScrollPane mainPanelSP;
+    private JPanel projectButPanel;
     private ProjectInfoPanel infoContentPanel = new ProjectInfoPanel();
 
     public OpenProject() {
+        initComponents();
+    }
+
+    public void initComponents(){
         projectInfoSP.add(infoContentPanel.getMainPanel());
         updateProjectList();
         setActions();
 
+        projectList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if(projectList.getSelectedIndex()>-1){
+                    openProjectBut.setEnabled(true);
+                    deleteProjectBut.setEnabled(true);
+                }else{
+                    openProjectBut.setEnabled(false);
+                    deleteProjectBut.setEnabled(false);
+                }
+            }
+        });
     }
     public OpenProject(ProjectInfoPanel infoContentPanel) {
         this.infoContentPanel = infoContentPanel;
