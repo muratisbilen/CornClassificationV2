@@ -49,12 +49,15 @@ public class MainPanel {
     private JDialog dia = new JDialog(new JFrame(),true);
     private JTextPane tp = new JTextPane();
     private JProgressBar pb = new JProgressBar();
+    private ProgressFrame pbfr = new ProgressFrame();
 
     public MainPanel() {
         initComponents();
     }
 
     public void initComponents(){
+        nextButton.setEnabled(false);
+        backButton.setEnabled(false);
         openProjectBut.setFocusPainted(false);
         createProjectBut.setFocusPainted(false);
         tp.setEditable(false);
@@ -106,6 +109,8 @@ public class MainPanel {
                                 long serialized_id = SerializeToDatabase.serializeJavaObjectToDB(c,pgson,p);
                                 tp.setText(tp.getText()+"\n"+"Proje veritabanına başarılı bir şekilde kaydedildi.");
 
+                                rf = new ResultForm();
+
                                 DefaultListModel dlm = new DefaultListModel();
                                 for(int i=0;i<samples.size();i++){
                                     dlm.addElement(samples.get(i));
@@ -132,6 +137,8 @@ public class MainPanel {
                                     boolean a = (boolean)get();
 
                                     disposeProgressBar();
+                                    nextButton.setEnabled(true);
+                                    backButton.setEnabled(true);
 
                                 }catch(Exception ex){
                                     ex.printStackTrace();
@@ -171,8 +178,8 @@ public class MainPanel {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 1) {
                     JDialog d = new JDialog(new JFrame(), true);
-                    d.setLocationRelativeTo(null);
                     d.setSize(800, 600);
+                    d.setLocationRelativeTo(null);
                     d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
                     JTextPane tp2 = new JTextPane();
                     tp2.setEditable(false);
@@ -206,31 +213,88 @@ public class MainPanel {
         op.getOpenProjectBut().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Connection c = null;
+
+                ///////////////////////////
+
                 try {
-                    Class.forName("org.sqlite.JDBC");
-                    c = DriverManager.getConnection("jdbc:sqlite:test.db");
+                    SwingWorker<Boolean, Integer> worker = new SwingWorker<Boolean, Integer>() {
+                        @Override
+                        protected Boolean doInBackground() throws Exception {
+                            publish(0);
 
-                    Statement st = c.createStatement();
-                    ProjectItem pi = (ProjectItem)(op.getProjectList().getSelectedValue());
-                    String getdbtable = "Select serialized_object from Projects where serialized_id="+pi.getSerialized_id();
+                            Connection c = null;
+                            try {
+                                Class.forName("org.sqlite.JDBC");
+                                c = DriverManager.getConnection("jdbc:sqlite:test.db");
 
-                    ResultSet rs = st.executeQuery(getdbtable);
-                    Project p = null;
-                    if(rs.next()) {
-                        String pgson = SerializeToDatabase.deSerializeJavaObjectFromDB(c,pi.getSerialized_id());
-                        Gson gson = new Gson();
-                        Type mytype = new TypeToken<Project>(){}.getType();
-                        p = gson.fromJson(pgson, mytype);
-                    }
+                                Statement st = c.createStatement();
+                                ProjectItem pi = (ProjectItem)(op.getProjectList().getSelectedValue());
+                                String getdbtable = "Select serialized_object from Projects where serialized_id="+pi.getSerialized_id();
 
-                    if(p!=null){
-                        openProject(p);
-                        openProjectJF.dispose();
-                    }else{
-                        JOptionPane.showMessageDialog(centerPanel,"Proje veritabanında bulunamamıştır.");
-                    }
+                                ResultSet rs = st.executeQuery(getdbtable);
+                                Project p = null;
+                                if(rs.next()) {
+                                    String pgson = SerializeToDatabase.deSerializeJavaObjectFromDB(c,pi.getSerialized_id());
+                                    Gson gson = new Gson();
+                                    Type mytype = new TypeToken<Project>(){}.getType();
+                                    p = gson.fromJson(pgson, mytype);
+                                }
+
+                                if(p!=null){
+                                    openProject(p);
+                                    openProjectJF.dispose();
+                                }else{
+                                    JOptionPane.showMessageDialog(centerPanel,"Proje veritabanında bulunamamıştır.");
+                                }
+                                c.close();
+                            }catch(Exception ex){
+                                ex.printStackTrace();
+                            }
+                            Thread.sleep(1000);
+                            return(true);
+                        }
+
+                        protected void process(List<Integer> i){
+                            System.out.println("Progress Started");
+                            showUpProgressBar("Projeyi yüklüyor. Lütfen Bekleyiniz");
+                        }
+
+                        protected void done(){
+                            tp.setText(tp.getText()+"\n"+"Veritabanı başarılı bir kapatıldı ve analiz tamamlandı.");
+                            try{
+                                boolean a = (boolean)get();
+                                pbfr.getTimer().stop();
+                                pbfr.dispose();
+                                backButton.setEnabled(true);
+                                nextButton.setEnabled(true);
+
+                            }catch(Exception ex){
+                                ex.printStackTrace();
+                            }
+                        }
+                    };
+                    worker.addPropertyChangeListener(new PropertyChangeListener() {
+                        @Override
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            SwingWorker task = (SwingWorker) evt.getSource();
+
+                            if ("progress".equals(evt.getPropertyName())) {
+                                int progress = task.getProgress();
+                            }
+
+                            if(evt.getNewValue() == SwingWorker.StateValue.DONE){
+                                System.out.println("Task done.");
+                                try{
+                                    task.get();
+                                }catch(Exception ex){
+
+                                }
+                            }
+                        }
+                    });
+                    worker.execute();
                 }catch(Exception ex){
+                    System.out.println("Problem in serialization, retrieving database or the project.");
                     ex.printStackTrace();
                 }
             }
@@ -240,6 +304,17 @@ public class MainPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 cp.getFr().setVisible(true);
+            }
+        });
+
+        backButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                centerPanel1.removeAll();
+                centerPanel1.add(centerPanel2, BorderLayout.CENTER);
+                centerPanel1.updateUI();
+                backButton.setEnabled(false);
+                nextButton.setEnabled(false);
             }
         });
     }
@@ -264,6 +339,7 @@ public class MainPanel {
     public void openProject(Project p){
         ArrayList<Maize> samples = p.getSamples();
 
+        rf = new ResultForm();
         DefaultListModel dlm = new DefaultListModel();
         for(int i=0;i<samples.size();i++){
             dlm.addElement(samples.get(i));
@@ -273,6 +349,14 @@ public class MainPanel {
         centerPanel1.removeAll();
         centerPanel1.add(rf.getMainPanel(), BorderLayout.CENTER);
         centerPanel1.updateUI();
+        nextButton.setEnabled(true);
+        backButton.setEnabled(true);
+    }
+
+    public void showUpProgressBar(String text){
+        pbfr = new ProgressFrame(text);
+        pbfr.getTimer().start();
+        pbfr.setVisible(true);
     }
 
     public void disposeProgressBar(){

@@ -1,5 +1,7 @@
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Set;
 
 public class Maize implements Serializable {
     private String name;
@@ -46,6 +48,7 @@ public class Maize implements Serializable {
 
     public void setResult(LinkedHashMap<String, Double> result) {
         this.result = result;
+
     }
 
     public String toString(){

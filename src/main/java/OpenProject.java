@@ -44,6 +44,31 @@ public class OpenProject {
                 }
             }
         });
+
+        deleteProjectBut.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int resp = JOptionPane.showConfirmDialog(mainPanel,((ProjectItem)projectList.getSelectedValue()).getProjectName()+" projesini silmek istiyor musunuz?","Proje Sil",JOptionPane.YES_NO_OPTION);
+                if(resp == JOptionPane.YES_OPTION) {
+                    Connection c = null;
+                    try {
+                        Class.forName("org.sqlite.JDBC");
+                        c = DriverManager.getConnection("jdbc:sqlite:test.db");
+                        Statement st = c.createStatement();
+                        ProjectItem pi = ((ProjectItem) projectList.getSelectedValue());
+                        String com = "DELETE FROM Projects WHERE serialized_id=" + pi.getSerialized_id();
+                        st.executeUpdate(com);
+                        ((DefaultListModel) projectList.getModel()).remove(projectList.getSelectedIndex());
+                        openProjectBut.setEnabled(false);
+                        deleteProjectBut.setEnabled(false);
+                        projectList.clearSelection();
+                        c.close();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
     }
     public OpenProject(ProjectInfoPanel infoContentPanel) {
         this.infoContentPanel = infoContentPanel;
@@ -77,7 +102,7 @@ public class OpenProject {
                 dlm.addElement(pi);
             }
             projectList.setModel(dlm);
-
+            c.close();
         }catch(Exception ex){
             System.out.println("Projeler veritabanından çekilirken hata oluştu.");
             ex.printStackTrace();

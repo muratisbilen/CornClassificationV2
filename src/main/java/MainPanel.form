@@ -54,7 +54,7 @@
                         </constraints>
                         <properties>
                           <background color="-1"/>
-                          <text value="İleri --&gt;"/>
+                          <text value="Rapor Oluştur"/>
                         </properties>
                       </component>
                       <hspacer id="ca20a">

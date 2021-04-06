@@ -26,8 +26,8 @@ public class ResultForm {
 
         this.sampleList.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                if(e.getClickCount()==1){
+            public void mouseReleased(MouseEvent e) {
+                if(sampleList.getSelectedIndex()>-1 && e.getClickCount()==1){
                     gp.setM((Maize)sampleList.getSelectedValue());
                 }
             }
