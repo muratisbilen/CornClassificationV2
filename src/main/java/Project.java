@@ -2,21 +2,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class Project implements Serializable {
+    private String filename;
     private String projectName;
     private long serialized_id;
-    ArrayList<Maize> samples;
+    private ArrayList<Maize> samples;
 
-    public Project(){
-        this.projectName = "";
-        this.samples = new ArrayList<>();
-    }
-
-    public Project(String projectName){
-        this.projectName = projectName;
-        this.samples = new ArrayList<>();
-    }
-
-    public Project(String projectName, ArrayList<Maize> samples) {
+    public Project(String filename, String projectName, ArrayList<Maize> samples) {
+        this.filename = filename;
         this.projectName = projectName;
         this.samples = samples;
     }
@@ -43,5 +35,13 @@ public class Project implements Serializable {
 
     public void setSerialized_id(long serialized_id) {
         this.serialized_id = serialized_id;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 }

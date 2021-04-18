@@ -45,11 +45,12 @@ public class MainPanel {
     private OpenProject op = new OpenProject();
     private CreateProject cp = new CreateProject();
     private JFrame openProjectJF;
-    private ResultForm rf = new ResultForm();
+    private ResultForm rf;
     private JDialog dia = new JDialog(new JFrame(),true);
     private JTextPane tp = new JTextPane();
     private JProgressBar pb = new JProgressBar();
     private ProgressFrame pbfr = new ProgressFrame();
+
 
     public MainPanel() {
         initComponents();
@@ -100,7 +101,7 @@ public class MainPanel {
                                     tp.setText(tx+"\n"+(count++)+"/"+samples.size()+" adet örnek analiz edildi.");
                                 }
 
-                                Project p = new Project(cp.getProjectNameTF().getText(),samples);
+                                Project p = new Project(f1.getName(),cp.getProjectNameTF().getText(),samples);
 
                                 Gson gson = new GsonBuilder().serializeSpecialFloatingPointValues().create();
                                 Type doubleDataListType = new TypeToken<Double>() {}.getType();
@@ -109,7 +110,7 @@ public class MainPanel {
                                 long serialized_id = SerializeToDatabase.serializeJavaObjectToDB(c,pgson,p);
                                 tp.setText(tp.getText()+"\n"+"Proje veritabanına başarılı bir şekilde kaydedildi.");
 
-                                rf = new ResultForm();
+                                rf = new ResultForm(p);
 
                                 DefaultListModel dlm = new DefaultListModel();
                                 for(int i=0;i<samples.size();i++){
@@ -317,6 +318,14 @@ public class MainPanel {
                 nextButton.setEnabled(false);
             }
         });
+
+        this.nextButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                rf.setGrf(new GenerateReportForm(rf.getSampleList()));
+                rf.getGrf().getD().setVisible(true);
+            }
+        });
     }
 
     public void showUpProgressBar(){
@@ -339,7 +348,7 @@ public class MainPanel {
     public void openProject(Project p){
         ArrayList<Maize> samples = p.getSamples();
 
-        rf = new ResultForm();
+        rf = new ResultForm(p);
         DefaultListModel dlm = new DefaultListModel();
         for(int i=0;i<samples.size();i++){
             dlm.addElement(samples.get(i));
