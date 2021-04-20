@@ -115,6 +115,10 @@ public class Complex {
         setImag(getImag()*x);
     }
 
+    public static Complex multiply(Complex c, double x){
+        return( new Complex(c.getReal()*x, c.getImag()*x));
+    }
+
     public static Complex ln(Complex c){
         return(new Complex(Math.log(c.getCoef()),c.getX()));
     }
