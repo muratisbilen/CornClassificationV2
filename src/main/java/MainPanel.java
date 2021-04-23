@@ -197,6 +197,9 @@ public class MainPanel {
             public void actionPerformed(ActionEvent e) {
                 openProjectJF = new JFrame("Kayıtlı Proje Aç");
                 op.updateProjectList();
+                op.getOpenProjectBut().setEnabled(false);
+                op.getDeleteProjectBut().setEnabled(false);
+                op.getProjectList().clearSelection();
                 openProjectJF.add(op.getMainPanel());
                 openProjectJF.setSize(800,600);
                 openProjectJF.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -304,6 +307,7 @@ public class MainPanel {
         createProjectBut.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                cp.refresh();
                 cp.getFr().setVisible(true);
             }
         });

@@ -6,15 +6,23 @@ public class ProjectInfoPanel {
     private JLabel dateLab;
     private JLabel uploadedFileLab;
     private JLabel numberOfSamplesLab;
+    private JLabel lab1;
+    private JLabel lab2;
+    private JLabel lab3;
+    private JLabel lab4;
+    private JLabel pnLab;
+    private JLabel creLab;
+    private JLabel ufLab;
+    private JLabel snLab;
 
     public ProjectInfoPanel(){
 
     }
-    public ProjectInfoPanel(JLabel projectNameLab, JLabel dateLab, JLabel uploadedFileLab, JLabel numberOfSamplesLab) {
-        this.projectNameLab = projectNameLab;
-        this.dateLab = dateLab;
-        this.uploadedFileLab = uploadedFileLab;
-        this.numberOfSamplesLab = numberOfSamplesLab;
+    public ProjectInfoPanel(String projectNameLab, String dateLab, String uploadedFileLab, int numberOfSamplesLab) {
+        this.projectNameLab.setText(projectNameLab);
+        this.dateLab.setText(dateLab);
+        this.uploadedFileLab.setText(uploadedFileLab);
+        this.numberOfSamplesLab.setText(""+numberOfSamplesLab);
     }
 
     public JPanel getMainPanel() {
@@ -29,31 +37,38 @@ public class ProjectInfoPanel {
         return projectNameLab;
     }
 
-    public void setProjectNameLab(JLabel projectNameLab) {
-        this.projectNameLab = projectNameLab;
+    public void setProjectNameLab(String projectNameLab) {
+        this.projectNameLab.setText(projectNameLab);
     }
 
     public JLabel getDateLab() {
         return dateLab;
     }
 
-    public void setDateLab(JLabel dateLab) {
-        this.dateLab = dateLab;
+    public void setDateLab(String dateLab) {
+        this.dateLab.setText(dateLab);
     }
 
     public JLabel getUploadedFileLab() {
         return uploadedFileLab;
     }
 
-    public void setUploadedFileLab(JLabel uploadedFileLab) {
-        this.uploadedFileLab = uploadedFileLab;
+    public void setUploadedFileLab(String uploadedFileLab) {
+        this.uploadedFileLab.setText(uploadedFileLab);
     }
 
     public JLabel getNumberOfSamplesLab() {
         return numberOfSamplesLab;
     }
 
-    public void setNumberOfSamplesLab(JLabel numberOfSamplesLab) {
-        this.numberOfSamplesLab = numberOfSamplesLab;
+    public void setNumberOfSamplesLab(String numberOfSamplesLab) {
+        this.numberOfSamplesLab.setText(numberOfSamplesLab);
+    }
+
+    public void setValues(String projectNameLab, String dateLab, String uploadedFileLab, int numberOfSamplesLab) {
+        this.projectNameLab.setText(projectNameLab);
+        this.dateLab.setText(dateLab);
+        this.uploadedFileLab.setText(uploadedFileLab);
+        this.numberOfSamplesLab.setText(""+numberOfSamplesLab);
     }
 }

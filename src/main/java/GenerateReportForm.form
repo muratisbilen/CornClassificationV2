@@ -34,6 +34,7 @@
           <component id="b5fbb" class="javax.swing.JCheckBox" binding="selectUnselectAllSamplesCheckBox" default-binding="true">
             <constraints border-constraint="Center"/>
             <properties>
+              <selected value="true"/>
               <text value="Tüm örnekleri seç/kaldır"/>
             </properties>
           </component>

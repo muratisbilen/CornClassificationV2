@@ -67,14 +67,7 @@
                 <border type="line" title="Proje Bilgileri">
                   <color color="-16777216"/>
                 </border>
-                <children>
-                  <scrollpane id="86902" binding="projectInfoSP">
-                    <constraints border-constraint="Center"/>
-                    <properties/>
-                    <border type="none"/>
-                    <children/>
-                  </scrollpane>
-                </children>
+                <children/>
               </grid>
             </children>
           </grid>

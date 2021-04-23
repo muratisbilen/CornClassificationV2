@@ -8,7 +8,7 @@ import java.util.Vector;
 
 public class SerializeToDatabase {
 
-    private static final String SQL_SERIALIZE_OBJECT = "INSERT INTO Projects(object_name, serialized_object) VALUES (?, ?)";
+    private static final String SQL_SERIALIZE_OBJECT = "INSERT INTO Projects(object_name, file_name, project_date, number_of_samples, serialized_object) VALUES (?, ?, ?, ?, ?)";
     private static final String SQL_DESERIALIZE_OBJECT = "SELECT serialized_object FROM Projects WHERE serialized_id = ?";
 
     public static long serializeJavaObjectToDB(Connection connection, Object objectToSerialize, Project originalObject) throws Exception {
@@ -16,7 +16,10 @@ public class SerializeToDatabase {
         PreparedStatement pstmt = connection.prepareStatement(SQL_SERIALIZE_OBJECT);
 
         pstmt.setString(1, originalObject.getProjectName());
-        pstmt.setObject(2, objectToSerialize);
+        pstmt.setString(2, originalObject.getFilename());
+        pstmt.setString(3, originalObject.getProjectDate());
+        pstmt.setInt(4, originalObject.getSamples().size());
+        pstmt.setObject(5, objectToSerialize);
         pstmt.executeUpdate();
         ResultSet rs = pstmt.getGeneratedKeys();
         int serialized_id = -1;

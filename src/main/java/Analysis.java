@@ -21,6 +21,9 @@ public class Analysis {
         String com = "CREATE TABLE IF NOT EXISTS `Projects` (" +
                 "`serialized_id` INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "`object_name` varchar(20) default NULL, " +
+                "`file_name` varchar(20) default NULL, " +
+                "`project_date` varchar(20) default NULL, " +
+                "`number_of_samples` INTEGER default NULL, " +
                 "`serialized_object` blob" +
                 ");";
 

@@ -119,6 +119,11 @@ public class CreateProject {
         });
     }
 
+    public void refresh(){
+        projectNameTF.setText("");
+        rawDataFileTF.setText("");
+    }
+
     public static ArrayList<Maize> getGenotypes(String filename){
         ArrayList<Maize> samples = new ArrayList<>();
         try{

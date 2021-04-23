@@ -8,7 +8,12 @@ import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.general.DefaultPieDataset;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileSystemView;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -33,6 +38,8 @@ public class ResultForm {
     private JPanel graphPanel;
     private JScrollPane tableSP;
     private JTable resultTable;
+    private JPanel exportPanel;
+    private JButton exportBut;
     private GraphPanel gp = new GraphPanel();
     private GenerateReportForm grf = new GenerateReportForm();
     private String candara;
@@ -49,12 +56,68 @@ public class ResultForm {
         this.sampleList.setCellRenderer(cr);
         JScrollPane sp = new JScrollPane(this.gp);
         this.graphPanel.add(sp);
+        exportBut.setEnabled(false);
 
         this.sampleList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if(sampleList.getSelectedIndex()>-1 && e.getClickCount()==1){
-                    gp.setM((Maize)sampleList.getSelectedValue());
+                    Maize m = (Maize)sampleList.getSelectedValue();
+                    gp.setM(m);
+                    DefaultTableModel dtm = new DefaultTableModel(new String[]{"Probeset","Genotip"},0){
+                        @Override
+                        public boolean isCellEditable(int row, int column) {
+                            return false;
+                        }
+                    };
+
+                    LinkedHashMap geno = m.getGenotype();
+                    ArrayList<String> keys = new ArrayList<>(geno.keySet());
+                    for(int i=0;i<keys.size();i++){
+                        String key = keys.get(i);
+                        dtm.addRow(new String[]{key,(String)geno.get(key)});
+                    }
+                    resultTable.setModel(dtm);
+                    resultTable.updateUI();
+                    exportBut.setEnabled(true);
+                    LineBorder linedBorder = new LineBorder(Color.darkGray);
+                    TitledBorder titledBorder = BorderFactory.createTitledBorder(linedBorder, m.getName());
+                    tablePanel.setBorder(titledBorder);
+                }
+            }
+        });
+
+        exportBut.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+
+                Maize m = (Maize)sampleList.getSelectedValue();
+                jfc.setSelectedFile(new File(m.getName()+"_Genotip_Verisi.txt"));
+                int approve = jfc.showOpenDialog(null);
+
+                if(approve == JFileChooser.APPROVE_OPTION){
+                    File out = jfc.getSelectedFile();
+
+                    int overwrite = JOptionPane.YES_OPTION;
+                    if(out.exists()){
+                        overwrite = JOptionPane.showConfirmDialog(mainPanel,"Bu dosya ismi ile bir dosya mevcut. Üzerine yazmak istiyor musunuz?","Dosya İsmi Mevcut",JOptionPane.YES_NO_OPTION);
+                    }
+                    if(overwrite == JOptionPane.YES_OPTION) {
+                        BufferedWriter bwr = null;
+                        try {
+                            bwr = new BufferedWriter(new FileWriter(jfc.getSelectedFile()));
+                            TableModel dtm = resultTable.getModel();
+                            bwr.write("Probeset\tGenotip\n");
+                            for (int i = 0; i < dtm.getRowCount(); i++) {
+                                bwr.write((String) dtm.getValueAt(i, 0) + "\t" + (String) dtm.getValueAt(i, 1)+"\n");
+                            }
+                            bwr.close();
+                            JOptionPane.showMessageDialog(mainPanel,"Genotip verisi kaydedildi.","Veri Kaydedildi",JOptionPane.INFORMATION_MESSAGE);
+                        } catch (Exception ex) {
+
+                        }
+                    }
                 }
             }
         });
@@ -77,7 +140,7 @@ public class ResultForm {
                 try {
                     generateReport();
                     grf.getD().dispose();
-                    JOptionPane.showMessageDialog(mainPanel,"Report saved.","",JOptionPane.OK_OPTION);
+                    JOptionPane.showMessageDialog(mainPanel,"Rapor kaydedildi.","",JOptionPane.INFORMATION_MESSAGE);
                 }catch(Exception ex){
                     System.out.println("allALtoGenerateBut");
                     ex.printStackTrace();
@@ -94,8 +157,7 @@ public class ResultForm {
         String date2 = dtf2.format(now);
         String[] dates = date.split(":");
 
-        //String reportID = dates[0]+dates[1]+dates[2]+dates[3]+dates[4]+dates[5];
-        String reportID = "deneme";
+        String reportID = dates[0]+dates[1]+dates[2]+dates[3]+dates[4]+dates[5];
         JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
         jfc.setSelectedFile(new File(reportID+".pdf"));
         int approve = jfc.showOpenDialog(null);
@@ -103,46 +165,69 @@ public class ResultForm {
         if(approve == JFileChooser.APPROVE_OPTION) {
             File out = jfc.getSelectedFile();
 
-            com.lowagie.text.Document document = new com.lowagie.text.Document(PageSize.A4);
-            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(jfc.getSelectedFile()));
-            document.open();
-            PdfContentByte cb = writer.getDirectContent();
-            BaseFont CANDARA_REGULAR = BaseFont.createFont(candara, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
-
-            // Load existing PDF
-
-            PdfReader reader = new PdfReader(getClass().getResource("May Report.pdf"));
-            PdfImportedPage page;
-            page = writer.getImportedPage(reader, 1);
-            document.newPage();
-            cb.addTemplate(page, 0, 0);
-
-            cb.beginText();
-            cb.setFontAndSize(CANDARA_REGULAR, 10);
-            cb.setColorFill(new Color(0, 0, 0));
-            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, reportID, 507f, 791f, 0);
-            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, date2, 507f, 777f, 0);
-            cb.setFontAndSize(CANDARA_REGULAR, 8);
-            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, "Mısır Sınıflandırma Aracı v1.0", 117f, 681.5f, 0);
-            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, this.p.getFilename(), 117f, 666.5f, 0);
-            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, this.p.getSamples().size()+"", 117f, 651.5f, 0);
-            cb.endText();
-            float yinit = 490f;
-            float yshift = 140f;
-            int inc = 0;
-            for(int i=0;i<p.getSamples().size();i++) {
-                if(yinit-(inc/3)*yshift<65f){
-                    page = writer.getImportedPage(reader, 2);
-                    document.newPage();
-                    cb.addTemplate(page, 0, 0);
-                    yinit = 640f;
-                    inc = 0;
-                }
-                pieChart(cb, this.p.getSamples().get(i), 40+(inc%3)*200f, yinit-(inc/3)*yshift, 20, 100);
-                inc++;
+            int overwrite = JOptionPane.YES_OPTION;
+            if(out.exists()){
+                overwrite = JOptionPane.showConfirmDialog(mainPanel,"Bu dosya ismi ile bir dosya mevcut. Üzerine yazmak istiyor musunuz?","Dosya İsmi Mevcut",JOptionPane.YES_NO_OPTION);
             }
+            if(overwrite == JOptionPane.YES_OPTION) {
+                com.lowagie.text.Document document = new com.lowagie.text.Document(PageSize.A4);
+                PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(out));
+                document.open();
+                PdfContentByte cb = writer.getDirectContent();
+                BaseFont CANDARA_REGULAR = BaseFont.createFont(candara, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
 
-            document.close();
+                // Load existing PDF
+
+                PdfReader reader = new PdfReader(getClass().getResource("May Report.pdf"));
+                PdfImportedPage page;
+                page = writer.getImportedPage(reader, 1);
+                document.newPage();
+                cb.addTemplate(page, 0, 0);
+
+                cb.beginText();
+                cb.setFontAndSize(CANDARA_REGULAR, 10);
+                cb.setColorFill(new Color(0, 0, 0));
+                cb.showTextAligned(PdfContentByte.ALIGN_LEFT, reportID, 507f, 791f, 0);
+                cb.showTextAligned(PdfContentByte.ALIGN_LEFT, date2, 507f, 777f, 0);
+                cb.setFontAndSize(CANDARA_REGULAR, 8);
+                cb.showTextAligned(PdfContentByte.ALIGN_LEFT, "Mısır Sınıflandırma Aracı v1.0", 117f, 681.5f, 0);
+                cb.showTextAligned(PdfContentByte.ALIGN_LEFT, this.p.getFilename(), 117f, 666.5f, 0);
+                cb.endText();
+                float yinit = 490f;
+                float yshift = 140f;
+                int inc = 0;
+                int pagecount = 2;
+                int samplecount = 0;
+                for (int i = 0; i < this.grf.getSamples().size(); i++) {
+                    if(this.grf.getSamples().get(i).isSelected()) {
+                        if (yinit - (inc / 3) * yshift < 65f) {
+                            page = writer.getImportedPage(reader, 2);
+                            document.newPage();
+                            cb.addTemplate(page, 0, 0);
+
+                            cb.beginText();
+                            cb.setFontAndSize(CANDARA_REGULAR, 10);
+                            cb.setColorFill(new Color(0, 0, 0));
+                            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, reportID, 507f, 791f, 0);
+                            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, date2, 507f, 777f, 0);
+                            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, "" + pagecount++, 553f, 43f, 0);
+                            cb.endText();
+
+                            yinit = 640f;
+                            inc = 0;
+                        }
+                        pieChart(cb, this.p.getSamples().get(i), 40 + (inc % 3) * 200f, yinit - (inc / 3) * yshift, 20, 100);
+                        inc++;
+                        samplecount++;
+                    }
+                }
+
+                cb.beginText();
+                cb.showTextAligned(PdfContentByte.ALIGN_LEFT, samplecount+"/"+this.p.getSamples().size() + "", 117f, 651.5f, 0);
+                cb.endText();
+
+                document.close();
+            }
         }
     }
 
@@ -175,14 +260,28 @@ public class ResultForm {
             cb.beginText();
             cb.setFontAndSize(CANDARA_REGULAR, 8);
             cb.showTextAligned(PdfContentByte.ALIGN_LEFT, keys.get(i)+": %"+(Math.round(1000*sc)/10.0), x+2*w, y+dist+i*(dist+rsize)+rsize/3f, 0);
-
             cb.endText();
-
         }
         cb.setFontAndSize(CANDARA_BOLD, 10);
         cb.beginText();
         cb.showTextAligned(PdfContentByte.ALIGN_LEFT,m.getName(),x,y+1.1f*h,0);
         cb.endText();
+
+        cb.setFontAndSize(CANDARA_BOLD, 7);
+        cb.beginText();
+        cb.showTextAligned(PdfContentByte.ALIGN_RIGHT,0+"",x-0.2f*w,y,0);
+        cb.showTextAligned(PdfContentByte.ALIGN_RIGHT,50+"",x-0.2f*w,y+h/2,0);
+        cb.showTextAligned(PdfContentByte.ALIGN_RIGHT,100+"",x-0.2f*w,y+h,0);
+        cb.endText();
+
+        cb.moveTo(x,y);
+        cb.lineTo(x-0.1f*w,y);
+        cb.moveTo(x,y+h/2);
+        cb.lineTo(x-0.1f*w,y+h/2);
+        cb.moveTo(x,y+h);
+        cb.lineTo(x-0.1f*w,y+h);
+        cb.setColorStroke(Color.black);
+        cb.stroke();
     }
 
     public GenerateReportForm getGrf() {

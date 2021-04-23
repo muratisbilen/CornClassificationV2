@@ -26,6 +26,7 @@ public class GraphPanel extends JPanel {
 
     public void initComponents(){
         setBackground(Color.WHITE);
+        setPreferredSize(new Dimension(750,428));
     }
 
     public void paintComponent(Graphics g){

@@ -32,7 +32,9 @@ public class GenerateReportForm {
         ListModel dlm = samples.getModel();
 
         for(int i=0;i<dlm.getSize();i++){
-            this.samples.add(new MaizeCheckBox((Maize)dlm.getElementAt(i)));
+            MaizeCheckBox mcb = new MaizeCheckBox((Maize)dlm.getElementAt(i));
+            mcb.setSelected(true);
+            this.samples.add(mcb);
         }
         putSamples(this.samples);
         if(dlm.getSize()==0){

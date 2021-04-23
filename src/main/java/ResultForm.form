@@ -15,21 +15,35 @@
           <grid id="847f9" binding="tablePanel" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints border-constraint="East"/>
             <properties/>
-            <border type="none"/>
+            <border type="line"/>
             <children>
               <scrollpane id="571a7" binding="tableSP">
                 <constraints border-constraint="Center"/>
                 <properties>
-                  <preferredSize width="150" height="428"/>
+                  <preferredSize width="350" height="428"/>
                 </properties>
                 <border type="none"/>
                 <children>
-                  <component id="7a25a" class="javax.swing.JTable" binding="resultTable">
+                  <component id="79824" class="javax.swing.JTable" binding="resultTable">
                     <constraints/>
                     <properties/>
                   </component>
                 </children>
               </scrollpane>
+              <grid id="760f2" binding="exportPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="South"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="f0f7b" class="javax.swing.JButton" binding="exportBut">
+                    <constraints border-constraint="Center"/>
+                    <properties>
+                      <background color="-1"/>
+                      <text value="Genotipi Bir Dosyaya Kaydet"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
             </children>
           </grid>
           <grid id="74175" binding="graphPanel" layout-manager="BorderLayout" hgap="0" vgap="0">

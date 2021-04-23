@@ -1,8 +1,13 @@
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -16,7 +21,6 @@ public class OpenProject {
     private JPanel mainPanel2;
     private JPanel savedProjects;
     private JPanel projectInfoPanel;
-    private JScrollPane projectInfoSP;
     private JButton cancelButton;
     private JScrollPane projectListSP;
     private JScrollPane mainPanelSP;
@@ -28,7 +32,8 @@ public class OpenProject {
     }
 
     public void initComponents(){
-        projectInfoSP.add(infoContentPanel.getMainPanel());
+        JScrollPane projectInfoSP = new JScrollPane(infoContentPanel.getMainPanel());
+        projectInfoPanel.add(projectInfoSP,BorderLayout.CENTER);
         updateProjectList();
         setActions();
 
@@ -42,6 +47,9 @@ public class OpenProject {
                     openProjectBut.setEnabled(false);
                     deleteProjectBut.setEnabled(false);
                 }
+                ProjectItem pi = (ProjectItem)projectList.getSelectedValue();
+                infoContentPanel.setValues(pi.getProjectName(),pi.getDate(),pi.getFilename(),pi.getSampleNumber());
+                infoContentPanel.getMainPanel().updateUI();
             }
         });
 
@@ -72,7 +80,8 @@ public class OpenProject {
     }
     public OpenProject(ProjectInfoPanel infoContentPanel) {
         this.infoContentPanel = infoContentPanel;
-        projectInfoSP.add(infoContentPanel.getMainPanel());
+        JScrollPane projectInfoSP = new JScrollPane(infoContentPanel.getMainPanel());
+        projectInfoPanel.add(projectInfoSP, BorderLayout.CENTER);
         updateProjectList();
         setActions();
     }
@@ -89,7 +98,7 @@ public class OpenProject {
             c = DriverManager.getConnection("jdbc:sqlite:test.db");
 
             Statement st = c.createStatement();
-            String getdbtable = "Select serialized_id, object_name from Projects";
+            String getdbtable = "Select serialized_id, object_name, file_name, project_date, number_of_samples from Projects";
             ResultSet rs = st.executeQuery(getdbtable);
 
             DefaultListModel dlm = new DefaultListModel();
@@ -97,8 +106,11 @@ public class OpenProject {
             while (rs.next()) {
                 long serialized_id = rs.getLong("serialized_id");
                 String object_name = rs.getString("object_name");
+                String file_name = rs.getString("file_name");
+                String project_date = rs.getString("project_date");
+                int number_of_samples = rs.getInt("number_of_samples");
 
-                ProjectItem pi = new ProjectItem(object_name, serialized_id);
+                ProjectItem pi = new ProjectItem(object_name, serialized_id,file_name,project_date,number_of_samples);
                 dlm.addElement(pi);
             }
             projectList.setModel(dlm);
@@ -179,7 +191,8 @@ public class OpenProject {
 
     public void setInfoContentPanel(ProjectInfoPanel infoContentPanel) {
         this.infoContentPanel = infoContentPanel;
-        projectInfoSP.removeAll();
-        projectInfoSP.add(this.infoContentPanel.getMainPanel());
+        projectInfoPanel.removeAll();
+        JScrollPane projectInfoSP = new JScrollPane(this.infoContentPanel.getMainPanel());
+        projectInfoPanel.add(projectInfoSP,BorderLayout.CENTER);
     }
 }
