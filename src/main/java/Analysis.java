@@ -1,7 +1,9 @@
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.sql.*;
 import java.util.*;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.io.*;
 
@@ -35,9 +37,12 @@ public class Analysis {
         JFrame jf = new JFrame();
         MainPanel mp = new MainPanel();
 
-        ImageIcon img = new ImageIcon("src/main/resources/may-logo.png");
+        InputStream is = Analysis.class.getClassLoader().getResourceAsStream("may-logo.png");
+        ImageIcon img = new ImageIcon(ImageIO.read(is));
         Image im = img.getImage();
-        Image im2 = im.getScaledInstance(im.getWidth(null)/10, im.getHeight(null)/10, Image.SCALE_SMOOTH);
+        img.setImage(im);
+        //Image im2 = im.getScaledInstance(im.getWidth(null)/10, im.getHeight(null)/10, Image.SCALE_SMOOTH);
+        Image im2 = im.getScaledInstance(250, 250, Image.SCALE_SMOOTH);
         img.setImage(im2);
         mp.getLogoLabel().setIcon(img);
 

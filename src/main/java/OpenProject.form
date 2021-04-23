@@ -61,19 +61,17 @@
                   </scrollpane>
                 </children>
               </grid>
-              <grid id="e15a9" binding="projectInfoPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+              <grid id="6c298" binding="projectInfoPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
                 <constraints border-constraint="Center"/>
                 <properties/>
-                <border type="line" title="Proje Bilgileri">
-                  <color color="-16777216"/>
-                </border>
+                <border type="none"/>
                 <children/>
               </grid>
             </children>
           </grid>
         </children>
       </scrollpane>
-      <grid id="8f06b" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="8f06b" binding="cancelPanel" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints border-constraint="South"/>
         <properties/>

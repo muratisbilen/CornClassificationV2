@@ -57,12 +57,12 @@ public class MainPanel {
     }
 
     public void initComponents(){
-        nextButton.setEnabled(false);
-        backButton.setEnabled(false);
-        openProjectBut.setFocusPainted(false);
-        createProjectBut.setFocusPainted(false);
-        tp.setEditable(false);
-        cp.getCreateBut().addActionListener(new ActionListener() {
+        this.nextButton.setEnabled(false);
+        this.backButton.setEnabled(false);
+        this.openProjectBut.setFocusPainted(false);
+        this.createProjectBut.setFocusPainted(false);
+        this.tp.setEditable(false);
+        this.cp.getCreateBut().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 File f1 = new File(cp.getRawDataFileTF().getText());

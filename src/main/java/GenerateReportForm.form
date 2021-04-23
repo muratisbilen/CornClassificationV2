@@ -18,7 +18,7 @@
               <text value="İptal"/>
             </properties>
           </component>
-          <component id="37446" class="javax.swing.JButton" binding="generateBut">
+          <component id="6ec6b" class="javax.swing.JButton" binding="generateBut">
             <constraints border-constraint="East"/>
             <properties>
               <text value="Rapor Oluştur"/>

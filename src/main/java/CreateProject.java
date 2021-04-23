@@ -32,12 +32,12 @@ public class CreateProject {
     private JTextPane tp = new JTextPane();
 
     public CreateProject(){
-        fr.add(mainPanel);
-        fr.setSize(800,600);
-        fr.setLocationRelativeTo(null);
-        fr.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        createBut.setEnabled(false);
-        projectNameTF.getDocument().addDocumentListener(new DocumentListener() {
+        this.fr.add(this.mainPanel);
+        this.fr.setSize(800,600);
+        this.fr.setLocationRelativeTo(null);
+        this.fr.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        this.createBut.setEnabled(false);
+        this.projectNameTF.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 if(rawDataFileTF.getText().equals("") || projectNameTF.getText().equals("")){

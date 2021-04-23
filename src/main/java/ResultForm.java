@@ -1,5 +1,6 @@
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
+import org.apache.commons.compress.utils.IOUtils;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
@@ -42,8 +43,8 @@ public class ResultForm {
     private JButton exportBut;
     private GraphPanel gp = new GraphPanel();
     private GenerateReportForm grf = new GenerateReportForm();
-    private String candara;
-    private String candarabold;
+    private InputStream candara;
+    private InputStream candarabold;
     private Project p;
 
     public ResultForm(Project p){
@@ -125,8 +126,8 @@ public class ResultForm {
         addALtoGenerateBut();
 
         try {
-            candara = new File(this.getClass().getResource("Candara.ttf").toURI()).getAbsolutePath();
-            candarabold = new File(this.getClass().getResource("Candara_Bold.ttf").toURI()).getAbsolutePath();
+            this.candara = this.getClass().getResourceAsStream("Candara.ttf");
+            this.candarabold = this.getClass().getResourceAsStream("Candara_Bold.ttf");
         }catch(Exception ex){
             System.out.println("Candara");
             ex.printStackTrace();
@@ -174,7 +175,8 @@ public class ResultForm {
                 PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(out));
                 document.open();
                 PdfContentByte cb = writer.getDirectContent();
-                BaseFont CANDARA_REGULAR = BaseFont.createFont(candara, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+                byte[] bytes = IOUtils.toByteArray(candara);
+                BaseFont CANDARA_REGULAR = BaseFont.createFont("Candara.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true, bytes, null);
 
                 // Load existing PDF
 
@@ -232,8 +234,11 @@ public class ResultForm {
     }
 
     public void pieChart(PdfContentByte cb, Maize m, float x, float y,float w, float h) throws Exception{
-        BaseFont CANDARA_REGULAR = BaseFont.createFont(candara, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
-        BaseFont CANDARA_BOLD = BaseFont.createFont(candarabold, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+        byte[] bytes = IOUtils.toByteArray(candara);
+        BaseFont CANDARA_REGULAR = BaseFont.createFont("Candara.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true, bytes,null);
+
+        byte[] bytes2 = IOUtils.toByteArray(candarabold);
+        BaseFont CANDARA_BOLD = BaseFont.createFont("Candara_Bold.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true, bytes2, null);
         LinkedHashMap<String,Double> res = m.getResult();
         ArrayList<String> keys = new ArrayList<>(res.keySet());
         //cb.setLineWidth(32f);

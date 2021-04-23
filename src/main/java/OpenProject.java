@@ -25,6 +25,7 @@ public class OpenProject {
     private JScrollPane projectListSP;
     private JScrollPane mainPanelSP;
     private JPanel projectButPanel;
+    private JPanel cancelPanel;
     private ProjectInfoPanel infoContentPanel = new ProjectInfoPanel();
 
     public OpenProject() {
@@ -33,7 +34,7 @@ public class OpenProject {
 
     public void initComponents(){
         JScrollPane projectInfoSP = new JScrollPane(infoContentPanel.getMainPanel());
-        projectInfoPanel.add(projectInfoSP,BorderLayout.CENTER);
+        this.projectInfoPanel.add(projectInfoSP,BorderLayout.CENTER);
         updateProjectList();
         setActions();
 

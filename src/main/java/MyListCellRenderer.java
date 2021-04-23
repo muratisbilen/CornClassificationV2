@@ -27,7 +27,7 @@ class MyListCellRenderer extends DefaultListCellRenderer {
         BufferedImage bim = null;
 
         try{
-            bim = ImageIO.read(getClass().getResource("corn.png"));
+            bim = ImageIO.read(getClass().getResourceAsStream("corn.png"));
             label.setForeground(Color.black);
 
 
