@@ -189,8 +189,8 @@ public class ResultForm {
                 cb.beginText();
                 cb.setFontAndSize(CANDARA_REGULAR, 10);
                 cb.setColorFill(new Color(0, 0, 0));
-                cb.showTextAligned(PdfContentByte.ALIGN_LEFT, reportID, 507f, 791f, 0);
-                cb.showTextAligned(PdfContentByte.ALIGN_LEFT, date2, 507f, 777f, 0);
+                cb.showTextAligned(PdfContentByte.ALIGN_LEFT, reportID, 492f, 791f, 0);
+                cb.showTextAligned(PdfContentByte.ALIGN_LEFT, date2, 492f, 777f, 0);
                 cb.setFontAndSize(CANDARA_REGULAR, 8);
                 cb.showTextAligned(PdfContentByte.ALIGN_LEFT, "Mısır Sınıflandırma Aracı v1.0", 117f, 681.5f, 0);
                 cb.showTextAligned(PdfContentByte.ALIGN_LEFT, this.p.getFilename(), 117f, 666.5f, 0);
@@ -210,8 +210,8 @@ public class ResultForm {
                             cb.beginText();
                             cb.setFontAndSize(CANDARA_REGULAR, 10);
                             cb.setColorFill(new Color(0, 0, 0));
-                            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, reportID, 507f, 791f, 0);
-                            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, date2, 507f, 777f, 0);
+                            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, reportID, 492f, 791f, 0);
+                            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, date2, 492f, 777f, 0);
                             cb.showTextAligned(PdfContentByte.ALIGN_LEFT, "" + pagecount++, 553f, 43f, 0);
                             cb.endText();
 
