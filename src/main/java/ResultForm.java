@@ -1,12 +1,7 @@
-import com.lowagie.text.*;
-import com.lowagie.text.pdf.*;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.pdf.*;
 import org.apache.commons.compress.utils.IOUtils;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
-import org.jfree.chart.plot.RingPlot;
-import org.jfree.chart.ui.RectangleInsets;
-import org.jfree.data.general.DefaultPieDataset;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -21,6 +16,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Arc2D;
+import java.awt.geom.Rectangle2D;
 import java.io.FileOutputStream;
 import java.io.*;
 import java.time.LocalDateTime;
@@ -64,6 +61,7 @@ public class ResultForm {
             public void mouseReleased(MouseEvent e) {
                 if(sampleList.getSelectedIndex()>-1 && e.getClickCount()==1){
                     Maize m = (Maize)sampleList.getSelectedValue();
+                    System.out.println(m.getResult());//////////////////////////////////////////////////////////////////////
                     gp.setM(m);
                     DefaultTableModel dtm = new DefaultTableModel(new String[]{"Probeset","Genotip"},0){
                         @Override
@@ -171,7 +169,7 @@ public class ResultForm {
                 overwrite = JOptionPane.showConfirmDialog(mainPanel,"Bu dosya ismi ile bir dosya mevcut. Üzerine yazmak istiyor musunuz?","Dosya İsmi Mevcut",JOptionPane.YES_NO_OPTION);
             }
             if(overwrite == JOptionPane.YES_OPTION) {
-                com.lowagie.text.Document document = new com.lowagie.text.Document(PageSize.A4);
+                com.itextpdf.text.Document document = new com.itextpdf.text.Document(PageSize.A4);
                 PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(out));
                 document.open();
                 PdfContentByte cb = writer.getDirectContent();
@@ -188,38 +186,22 @@ public class ResultForm {
 
                 cb.beginText();
                 cb.setFontAndSize(CANDARA_REGULAR, 10);
-                cb.setColorFill(new Color(0, 0, 0));
+                cb.setColorFill(new BaseColor(0, 0, 0));
                 cb.showTextAligned(PdfContentByte.ALIGN_LEFT, reportID, 492f, 791f, 0);
                 cb.showTextAligned(PdfContentByte.ALIGN_LEFT, date2, 492f, 777f, 0);
                 cb.setFontAndSize(CANDARA_REGULAR, 8);
-                cb.showTextAligned(PdfContentByte.ALIGN_LEFT, "Mısır Sınıflandırma Aracı v1.0", 117f, 681.5f, 0);
+                cb.showTextAligned(PdfContentByte.ALIGN_LEFT, "Mısır Sınıflandırma Aracı v2.0", 117f, 681.5f, 0);
                 cb.showTextAligned(PdfContentByte.ALIGN_LEFT, this.p.getFilename(), 117f, 666.5f, 0);
+
                 cb.endText();
-                float yinit = 490f;
-                float yshift = 140f;
+                float yinit = 600f;
+                float yshift = 300f;
                 int inc = 0;
                 int pagecount = 2;
                 int samplecount = 0;
+
                 for (int i = 0; i < this.grf.getSamples().size(); i++) {
-                    if(this.grf.getSamples().get(i).isSelected()) {
-                        if (yinit - (inc / 3) * yshift < 65f) {
-                            page = writer.getImportedPage(reader, 2);
-                            document.newPage();
-                            cb.addTemplate(page, 0, 0);
-
-                            cb.beginText();
-                            cb.setFontAndSize(CANDARA_REGULAR, 10);
-                            cb.setColorFill(new Color(0, 0, 0));
-                            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, reportID, 492f, 791f, 0);
-                            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, date2, 492f, 777f, 0);
-                            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, "" + pagecount++, 553f, 43f, 0);
-                            cb.endText();
-
-                            yinit = 640f;
-                            inc = 0;
-                        }
-                        pieChart(cb, this.p.getSamples().get(i), 40 + (inc % 3) * 200f, yinit - (inc / 3) * yshift, 20, 100);
-                        inc++;
+                    if (this.grf.getSamples().get(i).isSelected()) {
                         samplecount++;
                     }
                 }
@@ -228,11 +210,113 @@ public class ResultForm {
                 cb.showTextAligned(PdfContentByte.ALIGN_LEFT, samplecount+"/"+this.p.getSamples().size() + "", 117f, 651.5f, 0);
                 cb.endText();
 
+                for (int i = 0; i < this.grf.getSamples().size(); i++) {
+                    MaizeCheckBox mcb = grf.getSamples().get(i);
+                    Maize m = mcb.getSample();
+
+                    if(mcb.isSelected()) {
+                        if (yinit - inc * yshift < 170f) {
+                            page = writer.getImportedPage(reader, 2);
+                            document.newPage();
+                            cb.addTemplate(page, 0, 0);
+
+                            cb.beginText();
+                            cb.setFontAndSize(CANDARA_REGULAR, 10);
+                            cb.setColorFill(new BaseColor(0, 0, 0));
+                            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, reportID, 492f, 791f, 0);
+                            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, date2, 492f, 777f, 0);
+                            cb.showTextAligned(PdfContentByte.ALIGN_LEFT, "" + pagecount++, 553f, 43f, 0);
+                            cb.endText();
+
+                            yinit = 750f;
+                            inc = 0;
+                        }
+
+                        if(m.getResult().size()>0) {
+                            float x = 40f;
+                            float y = yinit - inc*yshift;
+
+                            piechartHG(cb,m,40f, y,30f);
+                            piechartLine(cb,m,40f, y,20f);
+                        }
+
+                        inc++;
+                    }
+                }
+
                 document.close();
             }
         }
     }
 
+    public void piechartLine(PdfContentByte pb, Maize m,float x, float y,float r) throws Exception{
+        LinkedHashMap<String,LinkedHashMap<String,Double>> res = m.getLineResults();
+        ArrayList<String> keys = new ArrayList<>(res.keySet());
+
+        for(int i=0;i<keys.size();i++){
+            LinkedHashMap<String,Double> res2 = res.get(keys.get(i));
+            piechart(pb,res2,x + 20f + (i%3)*(2*r+110f),y-((i/3)+1)*(2*r+50f),r,keys.get(i));
+        }
+    }
+
+    public void piechartHG(PdfContentByte pb, Maize m,float x, float y,float r) throws Exception{
+        piechart(pb,m.getResult(),x,y,r,m.getName());
+    }
+
+
+    public void piechart(PdfContentByte pb, LinkedHashMap<String,Double> res,float x, float y,float r,String name) throws Exception{
+        byte[] bytes = IOUtils.toByteArray(candara);
+        BaseFont CANDARA_REGULAR = BaseFont.createFont("Candara.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true, bytes,null);
+
+        byte[] bytes2 = IOUtils.toByteArray(candarabold);
+        BaseFont CANDARA_BOLD = BaseFont.createFont("Candara_Bold.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true, bytes2, null);
+
+        ArrayList<String> keys = new ArrayList<>(res.keySet());
+
+        float rx = x + r;
+        float ry = y - r - 5f;
+
+        float enddeg = 0;
+
+        for(int i=0;i<keys.size();i++){
+            float score = (float)(1f*res.get(keys.get(i)));
+            Color c = Color.getHSBColor(1f * (i + 1) / keys.size(), 1, 1);
+
+            if(score!=0) {
+                float deg = score * 360f;
+
+                float firstx = (float) (rx + r * Math.cos(2 * Math.PI * enddeg / 360));
+                float firsty = (float) (ry + r * Math.sin(2 * Math.PI * enddeg / 360));
+
+                enddeg += deg;
+
+                pb.moveTo(rx, ry);
+                pb.lineTo(firstx, firsty);
+                pb.arc(rx-r,ry+r,rx-r+2*r,ry+r-2*r,enddeg-deg,deg);
+                pb.lineTo(rx, ry);
+
+                pb.closePath();
+            }
+
+            pb.rectangle(rx+r+20f,ry+r-i*10f,8f,-8f);
+            pb.setColorFill(new BaseColor(c.getRGB()));
+            pb.fill();
+
+            pb.setColorFill(new BaseColor(Color.BLACK.getRGB()));
+
+            pb.setFontAndSize(CANDARA_REGULAR,7f);
+            pb.beginText();
+            pb.showTextAligned(PdfContentByte.ALIGN_LEFT,keys.get(i)+": "+Math.round(10000f*score)/100f+" %",rx+r+30f,ry+r-i*10f-6f,0f);
+            pb.endText();
+        }
+
+        pb.setFontAndSize(CANDARA_BOLD, 10f);
+        pb.beginText();
+        pb.showTextAligned(PdfContentByte.ALIGN_LEFT,name,x,y+5f,0f);
+        pb.endText();
+    }
+
+    /*
     public void pieChart(PdfContentByte cb, Maize m, float x, float y,float w, float h) throws Exception{
         byte[] bytes = IOUtils.toByteArray(candara);
         BaseFont CANDARA_REGULAR = BaseFont.createFont("Candara.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true, bytes,null);
@@ -288,6 +372,8 @@ public class ResultForm {
         cb.setColorStroke(Color.black);
         cb.stroke();
     }
+
+     */
 
     public GenerateReportForm getGrf() {
         return grf;

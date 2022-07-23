@@ -7,23 +7,27 @@ public class Maize implements Serializable {
     private String name;
     private LinkedHashMap<String, String> genotype;
     private LinkedHashMap<String, Double> result;
+    private LinkedHashMap<String, LinkedHashMap<String, Double>> lineResults;
 
     public Maize(String name) {
         this.name = name;
         this.genotype = new LinkedHashMap<>();
         this.result = new LinkedHashMap<>();
+        this.lineResults = new LinkedHashMap<>();
     }
 
     public Maize(String name, LinkedHashMap<String, String> genotype) {
         this.name = name;
         this.genotype = genotype;
         this.result = new LinkedHashMap<>();
+        this.lineResults = new LinkedHashMap<>();
     }
 
     public Maize(String name, LinkedHashMap<String, String> genotype, LinkedHashMap<String, Double> result) {
         this.name = name;
         this.genotype = genotype;
         this.result = result;
+        this.lineResults = new LinkedHashMap<>();
     }
 
     public String getName() {
@@ -53,5 +57,13 @@ public class Maize implements Serializable {
 
     public String toString(){
         return(this.name);
+    }
+
+    public LinkedHashMap<String, LinkedHashMap<String, Double>> getLineResults() {
+        return lineResults;
+    }
+
+    public void setLineResults(LinkedHashMap<String, LinkedHashMap<String, Double>> lineResults) {
+        this.lineResults = lineResults;
     }
 }

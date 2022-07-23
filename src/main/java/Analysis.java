@@ -8,7 +8,7 @@ import javax.swing.*;
 import java.io.*;
 
 public class Analysis {
-
+    static MainPanel mp;
     public static void main(String[] args) throws Exception{
         UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
 
@@ -35,7 +35,7 @@ public class Analysis {
         c.close();
 
         JFrame jf = new JFrame();
-        MainPanel mp = new MainPanel();
+        mp = new MainPanel();
 
         InputStream is = Analysis.class.getClassLoader().getResourceAsStream("may-logo.png");
         ImageIcon img = new ImageIcon(ImageIO.read(is));
@@ -104,7 +104,6 @@ public class Analysis {
                 String ee = biomarkers.get(biom).get(1);
                 String oo = biomarkers.get(biom).get(2);
 
-                ArrayList<Integer> pp = which(biomps, biom);
                 ArrayList<String> geno = new ArrayList<>(Arrays.asList(genotypes.get(biom).split("")));
 
                 if(geno.get(0).equals(ee)){
@@ -170,6 +169,91 @@ public class Analysis {
         return results;
     }
 
+    public static LinkedHashMap<String, Double> calculateLine(LinkedHashMap<String,String> genotypes,LinkedHashMap<String, ArrayList<String>> biomarkers){
+        LinkedHashMap<String, Double> results = new LinkedHashMap<>();
+
+        int unk = 0;
+        ArrayList<Double> scores = new ArrayList<>();
+        ArrayList<Double> oscores = new ArrayList<>();
+
+        Set<String> biomset = biomarkers.keySet();
+        ArrayList<String> biomps = new ArrayList<>();
+        biomps.addAll(biomset);
+
+        ArrayList<String> classes = new ArrayList<>();
+
+        for(String s : biomps){
+            classes.add(biomarkers.get(s).get(0));
+        }
+
+        ArrayList<String> pops = unique(classes);
+
+        for(int j=0;j<pops.size();j++){
+            ArrayList<Integer> pos = which(classes, pops.get(j));
+            int sc = 0;
+            int sco = 0;
+            for(int k=0;k<pos.size();k++){
+                String biom = biomps.get(pos.get(k));
+                String ee = biomarkers.get(biom).get(1);
+                String oo = biomarkers.get(biom).get(2);
+
+                String geno = genotypes.get(biom);
+                if(geno.equals(ee)){
+                    sc = sc+1;
+                }else if(geno.equals(oo)){
+                    sco = sco+1;
+                }else{
+                    unk = unk+1;
+                }
+            }
+
+            scores.add(1.0*sc/(pos.size()));
+            oscores.add(1.0*sco/(pos.size()));
+        }
+
+        ArrayList<Double> scores2 = new ArrayList<>();
+        scores2.addAll(scores);
+
+        for(int j=0;j<scores.size();j++){
+            ArrayList<Double> sr = new ArrayList<>();
+            sr.addAll(scores);
+            sr.remove(j);
+
+            ArrayList<Double> mult = new ArrayList<>();
+            double srsum = doubleSum(sr);
+            if(srsum!=0){
+                mult = doubleArrayDivide(sr,srsum);
+                int multcount = 0;
+                for(int h=0;h<scores2.size();h++){
+                    if(h!=j){
+                        scores2.set(h,scores2.get(h)+mult.get(multcount++)*oscores.get(j));
+                    }
+                }
+            }else{
+                for(int h=0;h<sr.size();h++){
+                    sr.set(h,sr.get(h)+1);
+                }
+                srsum = doubleSum(sr);
+                mult = doubleArrayDivide(sr,srsum);
+                int multcount = 0;
+                for(int h=0;h<scores2.size();h++){
+                    if(h!=j){
+                        scores2.set(h,scores2.get(h)+mult.get(multcount++)*oscores.get(j));
+                    }
+                }
+            }
+        }
+
+        scores2.add(1.0*unk/(biomps.size()));
+        ArrayList<Double> scores3 = doubleArrayDivide(scores2,doubleSum(scores2));
+        pops.add("Unknown");
+        for(int i=0;i<scores3.size();i++){
+            results.put(pops.get(i),scores3.get(i));
+        }
+
+        return results;
+    }
+
     public static ArrayList<Double> doubleArraySum(ArrayList<Double> a1, ArrayList<Double> a2){
         ArrayList<Double> result = new ArrayList<>();
 
@@ -212,13 +296,11 @@ public class Analysis {
 
     public static ArrayList<Integer> which(ArrayList<String> list, String str){
         ArrayList<Integer> result = new ArrayList<>();
-        ArrayList<String> list2 = new ArrayList<>();
-        list2.addAll(list);
 
-        int i;
-        while((i = list2.indexOf(str))>=0){
-            result.add(i);
-            list2.remove(i);
+        for(int k=0;k<list.size();k++){
+            if(list.get(k).equals(str)){
+                result.add(k);
+            }
         }
 
         return result;
@@ -241,10 +323,35 @@ public class Analysis {
         boolean check = checkBiomarkerAvailability(m.getGenotype(),biomarkers);
 
         if(check){
-            m.setResult(calculate(m.getGenotype(), biomarkers));
+            LinkedHashMap<String, Double> res = calculate(m.getGenotype(), biomarkers);
+            m.setResult(res);
+
+            ArrayList<String> keys = new ArrayList<>(res.keySet());
+            for(String s: keys){
+                if(res.get(s)>0 && !s.equals("Unknown")){
+                    analyzeLines(m,s);
+                }
+            }
         }else{
             System.out.println("Some of the biomarkers are not present in the input file. The analysis failed.");
             m.setResult(null);
+        }
+    }
+
+    public static void analyzeLines(Maize m, String hetgroup){
+        LinkedHashMap<String, ArrayList<String>> biomarkers = getBiomarkers(hetgroup+"_Lines_Biomarkers.txt");
+        mp.getTp().setText(mp.getTp().getText()+"\n"+hetgroup+" hatları için biyobelirteçler okundu. Toplamda \n-- "+biomarkers.size()+" adet biyobelirtec tespit edildi.");
+
+        //Check if all the biomarkers are present in the input file.
+        boolean check = checkBiomarkerAvailability(m.getGenotype(),biomarkers);
+
+        if(check){
+            LinkedHashMap<String, Double> res = calculateLine(m.getGenotype(),biomarkers);
+            m.getLineResults().put(hetgroup,res);
+        }else{
+            System.out.println("Some of the biomarkers are not present in the input file. The analysis failed.");
+            mp.getTp().setText(mp.getTp().getText()+"\n"+"Örneklerin genotip dosyasında "+hetgroup+" heterotik grubunun hatlarına ait bazı biyobelirteçler için bilgi bulunmadığından dolayı analiz yapılamamıştır");
+            m.getLineResults().put(hetgroup,null);
         }
     }
 
@@ -301,6 +408,8 @@ public class Analysis {
             }
             return result;
         }catch(Exception ex){
+            JOptionPane.showMessageDialog(null,"Biyobelirteç dosyasındaki bir heterotik grup için hat biyobelirteç dosyası bulunmamaktadır.");
+            mp.getTp().setText(mp.getTp().getText()+"\n"+"Biyobelirteç dosyasındaki bir heterotik grup için hat biyobelirteç dosyası bulunmamaktadır.");
             ex.printStackTrace();
         }
         return(result);

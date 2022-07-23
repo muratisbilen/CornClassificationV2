@@ -89,8 +89,10 @@ public class MainPanel {
                                 ArrayList<Maize> samples = CreateProject.getGenotypes(cp.getRawDataFileTF().getText());
                                 tp.setText(tp.getText()+"\n"+samples.size()+" adet örnek tespit edildi.");
                                 String biomarkerFile = "Biomarkers.txt";
+
                                 LinkedHashMap<String, ArrayList<String>> biomarkers = Analysis.getBiomarkers(biomarkerFile);
-                                tp.setText(tp.getText()+"\n"+"Biyobelirteçler okundu. Toplamda "+biomarkers.size()+" adet biyobelirteç tespit edildi.");
+
+                                tp.setText(tp.getText()+"\n"+"Biyobelirteçler okundu. Toplamda \n-- "+biomarkers.size()+" adet heterotik grup biyobelirteci tespit edildi.");
 
                                 tp.setText(tp.getText()+"\n"+"Örnekler analiz ediliyor");
                                 String tx = tp.getText();
@@ -574,5 +576,9 @@ public class MainPanel {
 
     public void setDia(JDialog dia) {
         this.dia = dia;
+    }
+
+    public JTextPane getTp() {
+        return tp;
     }
 }

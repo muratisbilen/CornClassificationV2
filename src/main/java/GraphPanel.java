@@ -1,6 +1,7 @@
 import javax.sound.sampled.Line;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Arc2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -26,9 +27,65 @@ public class GraphPanel extends JPanel {
 
     public void initComponents(){
         setBackground(Color.WHITE);
-        setPreferredSize(new Dimension(750,428));
+        setPreferredSize(new Dimension(1200,800));
     }
 
+    public void paintComponent(Graphics g){
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D)g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+        if(this.m.getResult().size()>0){
+            piechartHG(g2,m,50,50,200f,200f);
+            piechartLine(g2,m,50,50,150f,150f);
+        }
+    }
+
+    public void piechartLine(Graphics2D g2, Maize m,float x, float y,float w, float h){
+        LinkedHashMap<String,LinkedHashMap<String,Double>> res = m.getLineResults();
+        ArrayList<String> keys = new ArrayList<>(res.keySet());
+
+        for(int i=0;i<keys.size();i++){
+            LinkedHashMap<String,Double> res2 = res.get(keys.get(i));
+            piechart(g2,res2,x + (i%3)*(w+200f),((i/3)+2)*(y+h),w,h,keys.get(i));
+        }
+    }
+
+    public void piechartHG(Graphics2D g2, Maize m,float x, float y,float w, float h){
+        piechart(g2,m.getResult(),x,y,w,h,m.getName());
+    }
+
+
+    public void piechart(Graphics2D g2, LinkedHashMap<String,Double> res,float x, float y,float w, float h,String name){
+        FontMetrics fm = g2.getFontMetrics();
+        ArrayList<String> keys = new ArrayList<>(res.keySet());
+
+        float enddeg = 0;
+        for(int i=0;i<keys.size();i++){
+            float score = (float)(1f*res.get(keys.get(i)));
+            float deg = score*360f;
+
+            Arc2D.Float arc = new Arc2D.Float(x,y,w,h,enddeg,deg,Arc2D.PIE);
+
+            enddeg += deg;
+
+            Color c = Color.getHSBColor(1f*(i+1)/keys.size(),1,1);
+            g2.setColor(c);
+            g2.fill(arc);
+
+            Rectangle2D.Float rect = new Rectangle2D.Float(x+w+20f,y+i*25f,w/15f,h/15f);
+            g2.fill(rect);
+
+            g2.setColor(Color.BLACK);
+            g2.draw(rect);
+
+            g2.drawString(keys.get(i)+": "+Math.round(10000f*score)/100f+" %",x+w+45f,y+i*25f+fm.getHeight()/2f);
+        }
+        g2.drawString(name,x+(w/2)-fm.stringWidth(name)/2,y-20f);
+    }
+
+    /*
     public void paintComponent(Graphics g){
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D)g;
@@ -71,6 +128,8 @@ public class GraphPanel extends JPanel {
             }
         }
     }
+
+     */
 
     public Maize getM() {
         return m;
