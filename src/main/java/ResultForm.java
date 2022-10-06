@@ -61,7 +61,6 @@ public class ResultForm {
             public void mouseReleased(MouseEvent e) {
                 if(sampleList.getSelectedIndex()>-1 && e.getClickCount()==1){
                     Maize m = (Maize)sampleList.getSelectedValue();
-                    System.out.println(m.getResult());//////////////////////////////////////////////////////////////////////
                     gp.setM(m);
                     DefaultTableModel dtm = new DefaultTableModel(new String[]{"Probeset","Genotip"},0){
                         @Override
