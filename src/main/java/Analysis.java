@@ -79,6 +79,8 @@ public class Analysis {
     public static LinkedHashMap<String, Double> calculate(LinkedHashMap<String,String> genotypes,LinkedHashMap<String,ArrayList<String>> biomarkers){
         LinkedHashMap<String, Double> results = new LinkedHashMap<>();
 
+        ArrayList<String> genotypesKeys = new ArrayList<>(genotypes.keySet());
+
         int unk = 0;
         ArrayList<Double> scores = new ArrayList<>();
         ArrayList<Double> oscores = new ArrayList<>();
@@ -104,7 +106,16 @@ public class Analysis {
                 String ee = biomarkers.get(biom).get(1);
                 String oo = biomarkers.get(biom).get(2);
 
-                ArrayList<String> geno = new ArrayList<>(Arrays.asList(genotypes.get(biom).split("")));
+                ArrayList<String> geno = new ArrayList<>();
+
+                if(genotypesKeys.indexOf(biom)<0){
+                    geno.add("-");
+                    geno.add("-");
+                }else{
+                    geno = new ArrayList<>(Arrays.asList(genotypes.get(biom).split("")));
+                }
+
+                //ArrayList<String> geno = new ArrayList<>(Arrays.asList(genotypes.get(biom).split("")));
 
                 if(geno.get(0).equals(ee)){
                     sc = sc+1;
@@ -172,6 +183,8 @@ public class Analysis {
     public static LinkedHashMap<String, Double> calculateLine(LinkedHashMap<String,String> genotypes,LinkedHashMap<String, ArrayList<String>> biomarkers){
         LinkedHashMap<String, Double> results = new LinkedHashMap<>();
 
+        ArrayList<String> genotypesKeys = new ArrayList<>(genotypes.keySet());
+
         int unk = 0;
         ArrayList<Double> scores = new ArrayList<>();
         ArrayList<Double> oscores = new ArrayList<>();
@@ -197,7 +210,17 @@ public class Analysis {
                 String ee = biomarkers.get(biom).get(1);
                 String oo = biomarkers.get(biom).get(2);
 
-                String geno = genotypes.get(biom);
+                ArrayList<String> geno = new ArrayList<>();
+
+                if(genotypesKeys.indexOf(biom)<0){
+                    geno.add("-");
+                    geno.add("-");
+                }else{
+                    geno = new ArrayList<>(Arrays.asList(genotypes.get(biom).split("")));
+                }
+
+                //String geno = genotypes.get(biom);
+
                 if(geno.equals(ee)){
                     sc = sc+1;
                 }else if(geno.equals(oo)){
@@ -320,7 +343,8 @@ public class Analysis {
 
     public static void analyze(Maize m, LinkedHashMap<String, ArrayList<String>> biomarkers){
         //Check if all the biomarkers are present in the input file.
-        boolean check = checkBiomarkerAvailability(m.getGenotype(),biomarkers);
+        //boolean check = checkBiomarkerAvailability(m.getGenotype(),biomarkers);
+        boolean check = true;
 
         if(check){
             LinkedHashMap<String, Double> res = calculate(m.getGenotype(), biomarkers);
@@ -343,7 +367,8 @@ public class Analysis {
         mp.getTp().setText(mp.getTp().getText()+"\n"+hetgroup+" hatları için biyobelirteçler okundu. Toplamda \n-- "+biomarkers.size()+" adet biyobelirtec tespit edildi.");
 
         //Check if all the biomarkers are present in the input file.
-        boolean check = checkBiomarkerAvailability(m.getGenotype(),biomarkers);
+        //boolean check = checkBiomarkerAvailability(m.getGenotype(),biomarkers);
+        boolean check = true;
 
         if(check){
             LinkedHashMap<String, Double> res = calculateLine(m.getGenotype(),biomarkers);
